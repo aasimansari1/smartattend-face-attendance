@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - AttendAI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .login-card {
+            background: white; border-radius: 20px; overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 900px; width: 100%;
+        }
+        .login-left {
+            background: linear-gradient(135deg, #4361ee 0%, #7209b7 100%);
+            color: white; padding: 3rem;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        .login-left h1 { font-weight: 700; font-size: 2rem; }
+        .login-left p { opacity: 0.85; font-size: 0.95rem; }
+        .feature-item { display: flex; align-items: center; margin-top: 1rem; }
+        .feature-item i { font-size: 1.3rem; margin-right: 12px; opacity: 0.9; }
+        .login-right { padding: 3rem; }
+        .login-right h3 { font-weight: 600; color: #1a1a2e; }
+        .form-control:focus { border-color: #4361ee; box-shadow: 0 0 0 0.2rem rgba(67,97,238,0.15); }
+        .btn-login {
+            background: linear-gradient(135deg, #4361ee, #7209b7);
+            border: none; padding: 0.75rem; font-weight: 600; font-size: 1rem;
+        }
+        .btn-login:hover { opacity: 0.9; background: linear-gradient(135deg, #3a56d4, #6208a0); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="login-card">
+            <div class="row g-0">
+                <div class="col-md-5 login-left d-none d-md-flex">
+                    <div>
+                        <h1><i class="bi bi-mortarboard-fill"></i> AttendAI</h1>
+                        <p class="mt-3">AI-Powered College Attendance Management System</p>
+                        <div class="feature-item"><i class="bi bi-camera-video"></i> <span>Face Recognition</span></div>
+                        <div class="feature-item"><i class="bi bi-graph-up"></i> <span>Real-time Analytics</span></div>
+                        <div class="feature-item"><i class="bi bi-file-earmark-pdf"></i> <span>Report Generation</span></div>
+                        <div class="feature-item"><i class="bi bi-bell"></i> <span>Smart Alerts</span></div>
+                    </div>
+                </div>
+                <div class="col-md-7 login-right">
+                    <h3 class="mb-1">Welcome Back</h3>
+                    <p class="text-muted mb-4">Sign in to your account</p>
+
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} py-2" role="alert">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" action="{{ url_for('auth.login') }}">
+                        {{ form.hidden_tag() }}
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                {{ form.email(class="form-control", placeholder="Enter your email") }}
+                            </div>
+                            {% for error in form.email.errors %}
+                                <small class="text-danger">{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                {{ form.password(class="form-control", placeholder="Enter your password") }}
+                            </div>
+                            {% for error in form.password.errors %}
+                                <small class="text-danger">{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        <button type="submit" class="btn btn-login btn-primary w-100 text-white">
+                            <i class="bi bi-box-arrow-in-right"></i> Sign In
+                        </button>
+                    </form>
+
+                    <div class="text-center mt-4">
+                        <small class="text-muted">
+                            <i class="bi bi-shield-check"></i> Secured with face recognition technology
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

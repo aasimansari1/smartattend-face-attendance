@@ -1,0 +1,123 @@
+{% extends "shared/base.html" %}
+{% block title %}Analytics{% endblock %}
+{% block page_title %}Analytics Dashboard{% endblock %}
+
+{% block sidebar %}
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.students') }}"><i class="bi bi-people"></i> Students</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.faculty_list') }}"><i class="bi bi-person-badge"></i> Faculty</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.courses') }}"><i class="bi bi-book"></i> Courses</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link active" href="{{ url_for('admin.analytics') }}"><i class="bi bi-graph-up"></i> Analytics</a>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card card-custom">
+            <div class="card-header">Students per Department</div>
+            <div class="card-body">
+                <canvas id="deptChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card card-custom">
+            <div class="card-header">Department Overview</div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Department</th>
+                                <th>Students</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for d in dept_stats %}
+                            <tr>
+                                <td>{{ d.department }}</td>
+                                <td><span class="badge bg-primary">{{ d.total_students }}</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary"
+                                            onclick="loadDeptAnalytics('{{ d.department }}')">
+                                        <i class="bi bi-bar-chart"></i> Details
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card card-custom" id="deptDetails" style="display:none;">
+    <div class="card-header" id="deptDetailsTitle">Department Details</div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table" id="deptCoursesTable">
+                <thead>
+                    <tr><th>Course Code</th><th>Course Name</th><th>Sessions</th><th>Avg Attendance</th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const deptLabels = {{ dept_stats|map(attribute='department')|list|tojson }};
+const deptValues = {{ dept_stats|map(attribute='total_students')|list|tojson }};
+
+new Chart(document.getElementById('deptChart'), {
+    type: 'doughnut',
+    data: {
+        labels: deptLabels,
+        datasets: [{
+            data: deptValues,
+            backgroundColor: ['#4361ee','#7209b7','#06d6a0','#ffd166','#ef476f','#118ab2'],
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } }
+    }
+});
+
+function loadDeptAnalytics(dept) {
+    fetch(`/api/analytics/department/${encodeURIComponent(dept)}`)
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('deptDetails').style.display = 'block';
+            document.getElementById('deptDetailsTitle').textContent = `${dept} - Course Analytics`;
+            const tbody = document.querySelector('#deptCoursesTable tbody');
+            tbody.innerHTML = '';
+            data.courses.forEach(c => {
+                const tr = document.createElement('tr');
+                const color = c.avg_attendance >= 75 ? 'success' : 'danger';
+                tr.innerHTML = `<td>${c.code}</td><td>${c.name}</td><td>${c.sessions}</td>
+                    <td><span class="badge bg-${color}">${c.avg_attendance}%</span></td>`;
+                tbody.appendChild(tr);
+            });
+            if (data.courses.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No course data</td></tr>';
+            }
+        });
+}
+</script>
+{% endblock %}

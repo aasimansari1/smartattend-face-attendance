@@ -1,0 +1,124 @@
+{% extends "shared/base.html" %}
+{% block title %}Course Report{% endblock %}
+{% block page_title %}{{ course.code }} - Attendance Report{% endblock %}
+
+{% block sidebar %}
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('faculty.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('faculty.courses') }}"><i class="bi bi-book"></i> My Courses</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('faculty.start_attendance') }}"><i class="bi bi-camera-video"></i> Take Attendance</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link active" href="{{ url_for('faculty.reports') }}"><i class="bi bi-file-earmark-bar-graph"></i> Reports</a>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h6 class="mb-0">{{ course.name }}</h6>
+        <small class="text-muted">{{ total_sessions }} sessions conducted | Threshold: {{ threshold }}%</small>
+    </div>
+    <div>
+        <a href="{{ url_for('api.export_csv', course_id=course.id) }}" class="btn btn-sm btn-outline-success">
+            <i class="bi bi-filetype-csv"></i> Export CSV
+        </a>
+        <a href="{{ url_for('api.export_pdf', course_id=course.id) }}" class="btn btn-sm btn-outline-danger">
+            <i class="bi bi-filetype-pdf"></i> Export PDF
+        </a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="card card-custom">
+            <div class="card-body">
+                <canvas id="attendanceChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card card-custom">
+            <div class="card-body">
+                <canvas id="pieChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card card-custom">
+    <div class="card-header">Student Attendance Summary</div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr><th>Roll No</th><th>Name</th><th>Present</th><th>Total</th><th>Percentage</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                    {% for s in student_stats %}
+                    <tr>
+                        <td class="fw-semibold">{{ s.student.roll_number }}</td>
+                        <td>{{ s.student.name }}</td>
+                        <td>{{ s.present }}</td>
+                        <td>{{ s.total }}</td>
+                        <td>
+                            <div class="progress" style="height:20px;">
+                                <div class="progress-bar {{ 'bg-success' if s.percentage >= threshold else 'bg-danger' }}"
+                                     style="width:{{ s.percentage }}%">{{ s.percentage }}%</div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge {{ 'badge-ok' if s.percentage >= threshold else 'badge-low' }}">
+                                {{ 'OK' if s.percentage >= threshold else 'LOW' }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+fetch(`/api/attendance/stats/{{ course.id }}`)
+    .then(r => r.json())
+    .then(data => {
+        new Chart(document.getElementById('attendanceChart'), {
+            type: 'bar',
+            data: {
+                labels: data.dates,
+                datasets: [
+                    { label: 'Present', data: data.present, backgroundColor: '#06d6a0' },
+                    { label: 'Absent', data: data.absent, backgroundColor: '#ef476f' }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } },
+                plugins: { title: { display: true, text: 'Session-wise Attendance' } }
+            }
+        });
+
+        const totalP = data.present.reduce((a,b) => a+b, 0);
+        const totalA = data.absent.reduce((a,b) => a+b, 0);
+        new Chart(document.getElementById('pieChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Present', 'Absent'],
+                datasets: [{ data: [totalP, totalA], backgroundColor: ['#06d6a0', '#ef476f'] }]
+            },
+            options: {
+                responsive: true,
+                plugins: { title: { display: true, text: 'Overall Ratio' } }
+            }
+        });
+    });
+</script>
+{% endblock %}

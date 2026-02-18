@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.env
+*.db
+face_data/known_faces/*
+face_data/temp/*
+app/static/uploads/faces/*
+!.gitkeep
+venv/
+.venv/
+instance/
+migrations/
+*.log

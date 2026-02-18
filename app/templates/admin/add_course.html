@@ -1,0 +1,75 @@
+{% extends "shared/base.html" %}
+{% block title %}Add Course{% endblock %}
+{% block page_title %}Add New Course{% endblock %}
+
+{% block sidebar %}
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.students') }}"><i class="bi bi-people"></i> Students</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.faculty_list') }}"><i class="bi bi-person-badge"></i> Faculty</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link active" href="{{ url_for('admin.courses') }}"><i class="bi bi-book"></i> Courses</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.analytics') }}"><i class="bi bi-graph-up"></i> Analytics</a>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card card-custom">
+            <div class="card-header">Create New Course</div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Course Code</label>
+                            {{ form.code(class="form-control", placeholder="CS301") }}
+                            {% for e in form.code.errors %}<small class="text-danger">{{ e }}</small>{% endfor %}
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label fw-semibold">Course Name</label>
+                            {{ form.name(class="form-control", placeholder="Data Structures & Algorithms") }}
+                            {% for e in form.name.errors %}<small class="text-danger">{{ e }}</small>{% endfor %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Department</label>
+                            {{ form.department(class="form-select") }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Semester</label>
+                            {{ form.semester(class="form-control", type="number") }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Section</label>
+                            {{ form.section(class="form-control", placeholder="A") }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Assign Faculty</label>
+                            {{ form.faculty_id(class="form-select") }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Schedule</label>
+                            {{ form.schedule(class="form-control", placeholder="Mon 09:00-10:00, Wed 09:00-10:00") }}
+                        </div>
+                    </div>
+                    <div class="alert alert-info mt-3 py-2">
+                        <small><i class="bi bi-info-circle"></i> Students matching the department, semester, and section will be auto-enrolled.</small>
+                    </div>
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Create Course</button>
+                        <a href="{{ url_for('admin.courses') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

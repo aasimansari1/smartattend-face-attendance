@@ -1,0 +1,123 @@
+{% extends "shared/base.html" %}
+{% block title %}Faculty Dashboard{% endblock %}
+{% block page_title %}Faculty Dashboard{% endblock %}
+
+{% block sidebar %}
+<li class="nav-item">
+    <a class="nav-link active" href="{{ url_for('faculty.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('faculty.courses') }}"><i class="bi bi-book"></i> My Courses</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('faculty.start_attendance') }}"><i class="bi bi-camera-video"></i> Take Attendance</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('faculty.reports') }}"><i class="bi bi-file-earmark-bar-graph"></i> Reports</a>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="label">My Courses</div>
+                    <div class="value">{{ courses|length }}</div>
+                </div>
+                <div class="icon-box" style="background:rgba(67,97,238,0.1);color:var(--primary);">
+                    <i class="bi bi-book-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="label">Active Sessions</div>
+                    <div class="value">{{ active_sessions|length }}</div>
+                </div>
+                <div class="icon-box" style="background:rgba(6,214,160,0.1);color:var(--success);">
+                    <i class="bi bi-broadcast"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="label">Today's Sessions</div>
+                    <div class="value">{{ today_sessions|length }}</div>
+                </div>
+                <div class="icon-box" style="background:rgba(255,209,102,0.15);color:#e6a800;">
+                    <i class="bi bi-calendar-check"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card card-custom">
+            <div class="card-header">My Courses</div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead><tr><th>Code</th><th>Name</th><th>Semester</th><th>Section</th><th>Enrolled</th></tr></thead>
+                        <tbody>
+                            {% for c in courses %}
+                            <tr>
+                                <td class="fw-semibold">{{ c.code }}</td>
+                                <td>{{ c.name }}</td>
+                                <td>{{ c.semester }}</td>
+                                <td>{{ c.section }}</td>
+                                <td><span class="badge bg-primary">{{ c.enrollments.count() }}</span></td>
+                            </tr>
+                            {% endfor %}
+                            {% if not courses %}
+                            <tr><td colspan="5" class="text-center text-muted py-4">No courses assigned</td></tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card card-custom">
+            <div class="card-header">Quick Actions</div>
+            <div class="card-body">
+                <a href="{{ url_for('faculty.start_attendance') }}" class="btn btn-primary w-100 mb-2">
+                    <i class="bi bi-camera-video"></i> Start Attendance Session
+                </a>
+                <a href="{{ url_for('faculty.reports') }}" class="btn btn-outline-primary w-100 mb-2">
+                    <i class="bi bi-file-earmark-bar-graph"></i> View Reports
+                </a>
+            </div>
+        </div>
+
+        {% if active_sessions %}
+        <div class="card card-custom mt-4">
+            <div class="card-header text-success"><i class="bi bi-broadcast"></i> Active Sessions</div>
+            <div class="card-body">
+                {% for s in active_sessions %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <strong>{{ s.course.code }}</strong>
+                        <small class="text-muted d-block">{{ s.date }} {{ s.start_time.strftime('%H:%M') }}</small>
+                    </div>
+                    <a href="{{ url_for('faculty.mark_attendance', session_id=s.id) }}" class="btn btn-sm btn-success">
+                        Continue
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

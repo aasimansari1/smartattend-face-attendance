@@ -1,0 +1,92 @@
+{% extends "shared/base.html" %}
+{% block title %}My Analytics{% endblock %}
+{% block page_title %}Attendance Analytics{% endblock %}
+
+{% block sidebar %}
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('student.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('student.attendance') }}"><i class="bi bi-calendar-check"></i> My Attendance</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link active" href="{{ url_for('student.analytics') }}"><i class="bi bi-graph-up"></i> Analytics</a>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card card-custom">
+            <div class="card-header">Attendance by Course</div>
+            <div class="card-body">
+                <canvas id="barChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card card-custom">
+            <div class="card-header">Overall Distribution</div>
+            <div class="card-body">
+                <canvas id="pieChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-2">
+    {% for i in range(chart_data.labels|length) %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card card-custom">
+            <div class="card-body text-center">
+                <h5 class="fw-bold">{{ chart_data.labels[i] }}</h5>
+                <div class="my-3">
+                    <div style="font-size:2.5rem;font-weight:700;color:{{ '#06d6a0' if chart_data.percentages[i] >= threshold else '#ef476f' }};">
+                        {{ chart_data.percentages[i] }}%
+                    </div>
+                </div>
+                <div class="progress mb-2" style="height:8px;">
+                    <div class="progress-bar {{ 'bg-success' if chart_data.percentages[i] >= threshold else 'bg-danger' }}"
+                         style="width:{{ chart_data.percentages[i] }}%"></div>
+                </div>
+                <small class="text-muted">{{ chart_data.present[i] }} present / {{ chart_data.present[i] + chart_data.absent[i] }} total</small>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const labels = {{ chart_data.labels|tojson }};
+const present = {{ chart_data.present|tojson }};
+const absent = {{ chart_data.absent|tojson }};
+
+new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [
+            { label: 'Present', data: present, backgroundColor: '#06d6a0' },
+            { label: 'Absent', data: absent, backgroundColor: '#ef476f' }
+        ]
+    },
+    options: {
+        responsive: true,
+        scales: { y: { beginAtZero: true } }
+    }
+});
+
+const totalP = present.reduce((a,b) => a+b, 0);
+const totalA = absent.reduce((a,b) => a+b, 0);
+new Chart(document.getElementById('pieChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Present', 'Absent'],
+        datasets: [{ data: [totalP, totalA], backgroundColor: ['#06d6a0', '#ef476f'] }]
+    },
+    options: { responsive: true }
+});
+</script>
+{% endblock %}

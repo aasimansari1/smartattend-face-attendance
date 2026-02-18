@@ -1,0 +1,114 @@
+{% extends "shared/base.html" %}
+{% block title %}Student Dashboard{% endblock %}
+{% block page_title %}My Dashboard{% endblock %}
+
+{% block sidebar %}
+<li class="nav-item">
+    <a class="nav-link active" href="{{ url_for('student.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('student.attendance') }}"><i class="bi bi-calendar-check"></i> My Attendance</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('student.analytics') }}"><i class="bi bi-graph-up"></i> Analytics</a>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-md-6 col-lg-3">
+        <div class="stat-card">
+            <div class="label">Name</div>
+            <div class="fw-bold" style="font-size:1.1rem;">{{ student.name }}</div>
+            <small class="text-muted">{{ student.roll_number }}</small>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="stat-card">
+            <div class="label">Department</div>
+            <div class="fw-bold" style="font-size:1.1rem;">{{ student.department }}</div>
+            <small class="text-muted">Sem {{ student.semester }} | Sec {{ student.section }}</small>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="stat-card">
+            <div class="label">Enrolled Courses</div>
+            <div class="value">{{ course_stats|length }}</div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="stat-card">
+            <div class="label">Face Status</div>
+            <div>
+                {% if student.face_encoding %}
+                    <span class="badge bg-success fs-6"><i class="bi bi-check-circle"></i> Enrolled</span>
+                {% else %}
+                    <span class="badge bg-warning text-dark fs-6"><i class="bi bi-exclamation-circle"></i> Not Set</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card card-custom">
+            <div class="card-header">Course Attendance Overview</div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr><th>Course</th><th>Present</th><th>Total</th><th>Percentage</th><th>Status</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for cs in course_stats %}
+                            <tr>
+                                <td>
+                                    <strong>{{ cs.course.code }}</strong>
+                                    <small class="text-muted d-block">{{ cs.course.name }}</small>
+                                </td>
+                                <td>{{ cs.present }}</td>
+                                <td>{{ cs.total }}</td>
+                                <td>
+                                    <div class="progress" style="height:20px;min-width:120px;">
+                                        <div class="progress-bar {{ 'bg-success' if cs.percentage >= threshold else 'bg-danger' }}"
+                                             style="width:{{ cs.percentage }}%">{{ cs.percentage }}%</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge {{ 'badge-ok' if cs.percentage >= threshold else 'badge-low' }}">
+                                        {{ 'OK' if cs.percentage >= threshold else 'LOW' }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% if not course_stats %}
+                            <tr><td colspan="5" class="text-center text-muted py-4">Not enrolled in any course</td></tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card card-custom">
+            <div class="card-header"><i class="bi bi-bell"></i> Notifications</div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for n in notifications %}
+                    <div class="list-group-item {{ 'list-group-item-warning' if n.type == 'warning' }}">
+                        <strong style="font-size:0.85rem;">{{ n.title }}</strong>
+                        <p class="mb-0 small text-muted">{{ n.message }}</p>
+                        <small class="text-muted">{{ n.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                    </div>
+                    {% endfor %}
+                    {% if not notifications %}
+                    <div class="list-group-item text-center text-muted py-4">No notifications</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

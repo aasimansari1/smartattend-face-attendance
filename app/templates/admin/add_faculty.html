@@ -1,0 +1,70 @@
+{% extends "shared/base.html" %}
+{% block title %}Add Faculty{% endblock %}
+{% block page_title %}Add New Faculty{% endblock %}
+
+{% block sidebar %}
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.students') }}"><i class="bi bi-people"></i> Students</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link active" href="{{ url_for('admin.faculty_list') }}"><i class="bi bi-person-badge"></i> Faculty</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.courses') }}"><i class="bi bi-book"></i> Courses</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.analytics') }}"><i class="bi bi-graph-up"></i> Analytics</a>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card card-custom">
+            <div class="card-header">Register New Faculty</div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Full Name</label>
+                            {{ form.name(class="form-control") }}
+                            {% for e in form.name.errors %}<small class="text-danger">{{ e }}</small>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Faculty ID</label>
+                            {{ form.faculty_id(class="form-control") }}
+                            {% for e in form.faculty_id.errors %}<small class="text-danger">{{ e }}</small>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Email</label>
+                            {{ form.email(class="form-control") }}
+                            {% for e in form.email.errors %}<small class="text-danger">{{ e }}</small>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Password</label>
+                            {{ form.password(class="form-control") }}
+                            {% for e in form.password.errors %}<small class="text-danger">{{ e }}</small>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Department</label>
+                            {{ form.department(class="form-select") }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Phone</label>
+                            {{ form.phone(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Register Faculty</button>
+                        <a href="{{ url_for('admin.faculty_list') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

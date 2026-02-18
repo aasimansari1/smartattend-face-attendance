@@ -1,0 +1,187 @@
+{% extends "shared/base.html" %}
+{% block title %}Mark Attendance{% endblock %}
+{% block page_title %}Mark Attendance - {{ course.code }}{% endblock %}
+
+{% block sidebar %}
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('faculty.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('faculty.courses') }}"><i class="bi bi-book"></i> My Courses</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link active" href="{{ url_for('faculty.start_attendance') }}"><i class="bi bi-camera-video"></i> Take Attendance</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('faculty.reports') }}"><i class="bi bi-file-earmark-bar-graph"></i> Reports</a>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Face Recognition Section -->
+    <div class="col-lg-5">
+        <div class="card card-custom">
+            <div class="card-header">
+                <i class="bi bi-camera-video text-primary"></i> Face Recognition
+                {% if session.status == 'active' %}
+                    <span class="badge bg-success ms-2">Active</span>
+                {% else %}
+                    <span class="badge bg-secondary ms-2">Closed</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="mb-3 text-center">
+                    <div id="cameraPreview" class="bg-dark rounded mb-3" style="min-height:240px;display:flex;align-items:center;justify-content:center;">
+                        <video id="video" width="100%" autoplay style="display:none;border-radius:8px;"></video>
+                        <canvas id="canvas" style="display:none;"></canvas>
+                        <span class="text-muted" id="cameraPlaceholder">
+                            <i class="bi bi-camera-video" style="font-size:3rem;"></i><br>
+                            Camera Preview
+                        </span>
+                    </div>
+                    <button class="btn btn-primary btn-sm me-2" id="startCamera" {% if session.status != 'active' %}disabled{% endif %}>
+                        <i class="bi bi-camera-video"></i> Start Camera
+                    </button>
+                    <button class="btn btn-success btn-sm" id="captureBtn" style="display:none;" {% if session.status != 'active' %}disabled{% endif %}>
+                        <i class="bi bi-camera"></i> Capture & Recognize
+                    </button>
+                </div>
+                <hr>
+                <p class="text-muted small mb-2">Or upload a classroom photo:</p>
+                <form method="POST" action="{{ url_for('faculty.face_attendance', session_id=session.id) }}" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="file" name="image" class="form-control form-control-sm mb-2" accept="image/*" required {% if session.status != 'active' %}disabled{% endif %}>
+                    <button type="submit" class="btn btn-outline-primary btn-sm w-100" {% if session.status != 'active' %}disabled{% endif %}>
+                        <i class="bi bi-upload"></i> Upload & Recognize
+                    </button>
+                </form>
+
+                {% if session.status == 'active' %}
+                <hr>
+                <form method="POST" action="{{ url_for('faculty.close_session', session_id=session.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger btn-sm w-100" onclick="return confirm('Close this session?')">
+                        <i class="bi bi-stop-circle"></i> Close Session
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Manual Attendance Section -->
+    <div class="col-lg-7">
+        <div class="card card-custom">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Student List - {{ session.date }} {{ session.start_time.strftime('%H:%M') }}</span>
+                <span class="badge bg-primary" id="presentCount">
+                    {{ students_map.values()|selectattr('record.status', 'equalto', 'present')|list|length }}/{{ students_map|length }}
+                </span>
+            </div>
+            <div class="card-body p-0">
+                <form method="POST" action="{{ url_for('faculty.manual_attendance', session_id=session.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width:40px;">
+                                        <input type="checkbox" id="selectAll" class="form-check-input">
+                                    </th>
+                                    <th>Roll No</th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Method</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sid, data in students_map.items() %}
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" name="present" value="{{ sid }}"
+                                               class="form-check-input student-check"
+                                               {{ 'checked' if data.record.status == 'present' }}
+                                               {% if session.status != 'active' %}disabled{% endif %}>
+                                    </td>
+                                    <td class="fw-semibold">{{ data.student.roll_number }}</td>
+                                    <td>{{ data.student.name }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ data.record.status }}">
+                                            {{ data.record.status|capitalize }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {% if data.record.marked_by == 'face_recognition' %}
+                                                <i class="bi bi-camera"></i> Face
+                                                {% if data.record.confidence %}({{ (data.record.confidence * 100)|round(0) }}%){% endif %}
+                                            {% else %}
+                                                <i class="bi bi-pencil"></i> Manual
+                                            {% endif %}
+                                        </small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if session.status == 'active' %}
+                    <div class="p-3">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-check-circle"></i> Save Manual Attendance
+                        </button>
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Select all checkbox
+document.getElementById('selectAll')?.addEventListener('change', function() {
+    document.querySelectorAll('.student-check').forEach(cb => {
+        if (!cb.disabled) cb.checked = this.checked;
+    });
+});
+
+// Camera handling
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const startBtn = document.getElementById('startCamera');
+const captureBtn = document.getElementById('captureBtn');
+const placeholder = document.getElementById('cameraPlaceholder');
+
+startBtn?.addEventListener('click', async () => {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        video.srcObject = stream;
+        video.style.display = 'block';
+        placeholder.style.display = 'none';
+        startBtn.style.display = 'none';
+        captureBtn.style.display = 'inline-block';
+    } catch(e) {
+        alert('Could not access camera: ' + e.message);
+    }
+});
+
+captureBtn?.addEventListener('click', () => {
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    canvas.toBlob(blob => {
+        const formData = new FormData();
+        formData.append('image', blob, 'capture.jpg');
+        const csrfToken = document.querySelector('[name=csrf_token]').value;
+        formData.append('csrf_token', csrfToken);
+        fetch('{{ url_for("faculty.face_attendance", session_id=session.id) }}', {
+            method: 'POST', body: formData
+        }).then(() => window.location.reload());
+    }, 'image/jpeg');
+});
+</script>
+{% endblock %}

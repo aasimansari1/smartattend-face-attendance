@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Attendance System{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #7209b7;
+            --success: #06d6a0;
+            --warning: #ffd166;
+            --danger: #ef476f;
+            --dark: #1a1a2e;
+            --sidebar-width: 260px;
+        }
+        * { font-family: 'Inter', sans-serif; }
+        body { background: #f0f2f5; min-height: 100vh; }
+
+        .sidebar {
+            position: fixed; top: 0; left: 0; bottom: 0;
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, var(--dark) 0%, #16213e 100%);
+            z-index: 1000; padding-top: 0; transition: transform 0.3s;
+        }
+        .sidebar .brand {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            color: white; font-weight: 700; font-size: 1.15rem;
+        }
+        .sidebar .brand i { color: var(--primary); }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.65); padding: 0.75rem 1.5rem;
+            font-size: 0.9rem; border-left: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: white; background: rgba(255,255,255,0.05);
+            border-left-color: var(--primary);
+        }
+        .sidebar .nav-link i { width: 24px; margin-right: 10px; }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 0;
+        }
+        .topbar {
+            background: white; padding: 0.75rem 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .topbar .page-title { font-weight: 600; font-size: 1.1rem; color: var(--dark); }
+
+        .content-area { padding: 1.5rem 2rem; }
+
+        .stat-card {
+            background: white; border-radius: 12px; padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            transition: transform 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-2px); }
+        .stat-card .icon-box {
+            width: 48px; height: 48px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem;
+        }
+        .stat-card .value { font-size: 1.75rem; font-weight: 700; }
+        .stat-card .label { font-size: 0.8rem; color: #6c757d; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .card-custom {
+            background: white; border: none; border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .card-custom .card-header {
+            background: white; border-bottom: 1px solid #eee;
+            font-weight: 600; padding: 1rem 1.5rem;
+        }
+
+        .badge-present { background: var(--success); }
+        .badge-absent { background: var(--danger); }
+        .badge-late { background: var(--warning); color: #333; }
+        .badge-low { background: var(--danger); }
+        .badge-ok { background: var(--success); }
+
+        .btn-primary { background: var(--primary); border-color: var(--primary); }
+        .btn-primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+
+        .table th { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; color: #6c757d; }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.show { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .content-area { padding: 1rem; }
+        }
+
+        .sidebar-toggle {
+            display: none; background: none; border: none;
+            font-size: 1.3rem; color: var(--dark);
+        }
+        @media (max-width: 768px) {
+            .sidebar-toggle { display: block; }
+        }
+
+        .overlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4); z-index: 999;
+        }
+        .overlay.show { display: block; }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+    <nav class="sidebar" id="sidebar">
+        <div class="brand">
+            <i class="bi bi-mortarboard-fill"></i> AttendAI
+        </div>
+        <ul class="nav flex-column mt-2">
+            {% block sidebar %}{% endblock %}
+            <li class="nav-item mt-3" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.5rem;">
+                <a class="nav-link" href="{{ url_for('auth.change_password') }}">
+                    <i class="bi bi-key"></i> Change Password
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('auth.logout') }}">
+                    <i class="bi bi-box-arrow-left"></i> Logout
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="main-content">
+        <div class="topbar">
+            <div class="d-flex align-items-center">
+                <button class="sidebar-toggle me-3" onclick="toggleSidebar()">
+                    <i class="bi bi-list"></i>
+                </button>
+                <span class="page-title">{% block page_title %}Dashboard{% endblock %}</span>
+            </div>
+            <div class="d-flex align-items-center">
+                <span class="text-muted me-3" style="font-size:0.85rem;">
+                    <i class="bi bi-person-circle"></i>
+                    {{ current_user.email }} ({{ current_user.role|capitalize }})
+                </span>
+            </div>
+        </div>
+
+        <div class="content-area">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('show');
+            document.getElementById('overlay').classList.toggle('show');
+        }
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

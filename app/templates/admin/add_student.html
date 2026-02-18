@@ -1,0 +1,89 @@
+{% extends "shared/base.html" %}
+{% block title %}{{ 'Edit' if editing else 'Add' }} Student{% endblock %}
+{% block page_title %}{{ 'Edit' if editing else 'Add New' }} Student{% endblock %}
+
+{% block sidebar %}
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link active" href="{{ url_for('admin.students') }}"><i class="bi bi-people"></i> Students</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.faculty_list') }}"><i class="bi bi-person-badge"></i> Faculty</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.courses') }}"><i class="bi bi-book"></i> Courses</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.analytics') }}"><i class="bi bi-graph-up"></i> Analytics</a>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card card-custom">
+            <div class="card-header">{{ 'Edit' if editing else 'Register New' }} Student</div>
+            <div class="card-body p-4">
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Full Name</label>
+                            {{ form.name(class="form-control", placeholder="John Doe") }}
+                            {% for e in form.name.errors %}<small class="text-danger">{{ e }}</small>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Roll Number</label>
+                            {{ form.roll_number(class="form-control", placeholder="CS2024001", readonly=editing) }}
+                            {% for e in form.roll_number.errors %}<small class="text-danger">{{ e }}</small>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Email</label>
+                            {{ form.email(class="form-control", placeholder="student@college.edu") }}
+                            {% for e in form.email.errors %}<small class="text-danger">{{ e }}</small>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Password{{ ' (leave blank to keep)' if editing }}</label>
+                            {{ form.password(class="form-control", placeholder="Min 6 characters") }}
+                            {% for e in form.password.errors %}<small class="text-danger">{{ e }}</small>{% endfor %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Department</label>
+                            {{ form.department(class="form-select") }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Semester</label>
+                            {{ form.semester(class="form-control", type="number", min=1, max=8) }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Section</label>
+                            {{ form.section(class="form-control", placeholder="A") }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Phone</label>
+                            {{ form.phone(class="form-control", placeholder="+91-9876543210") }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Parent Email</label>
+                            {{ form.parent_email(class="form-control", placeholder="parent@email.com") }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Face Photo (clear frontal face)</label>
+                            {{ form.photo(class="form-control") }}
+                            <small class="text-muted">JPG/PNG, clear face visible. Used for face recognition.</small>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> {{ 'Update' if editing else 'Register' }} Student
+                        </button>
+                        <a href="{{ url_for('admin.students') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "shared/base.html" %}
+{% block title %}Manage Courses{% endblock %}
+{% block page_title %}Manage Courses{% endblock %}
+
+{% block sidebar %}
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.students') }}"><i class="bi bi-people"></i> Students</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.faculty_list') }}"><i class="bi bi-person-badge"></i> Faculty</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link active" href="{{ url_for('admin.courses') }}"><i class="bi bi-book"></i> Courses</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.analytics') }}"><i class="bi bi-graph-up"></i> Analytics</a>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h6 class="mb-0">All Courses</h6>
+    <a href="{{ url_for('admin.add_course') }}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-circle"></i> Add Course
+    </a>
+</div>
+
+<div class="card card-custom">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Department</th>
+                        <th>Sem</th>
+                        <th>Section</th>
+                        <th>Faculty</th>
+                        <th>Enrolled</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in courses %}
+                    <tr>
+                        <td class="fw-semibold">{{ c.code }}</td>
+                        <td>{{ c.name }}</td>
+                        <td>{{ c.department }}</td>
+                        <td>{{ c.semester }}</td>
+                        <td>{{ c.section }}</td>
+                        <td>{{ c.faculty.name if c.faculty else 'Not Assigned' }}</td>
+                        <td><span class="badge bg-primary">{{ c.enrollments.count() }}</span></td>
+                    </tr>
+                    {% endfor %}
+                    {% if not courses %}
+                    <tr><td colspan="7" class="text-center text-muted py-4">No courses created</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends "shared/base.html" %}
+{% block title %}Manage Students{% endblock %}
+{% block page_title %}Manage Students{% endblock %}
+
+{% block sidebar %}
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link active" href="{{ url_for('admin.students') }}"><i class="bi bi-people"></i> Students</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.faculty_list') }}"><i class="bi bi-person-badge"></i> Faculty</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.courses') }}"><i class="bi bi-book"></i> Courses</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin.analytics') }}"><i class="bi bi-graph-up"></i> Analytics</a>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <form method="GET" class="d-inline-flex gap-2">
+            <select name="department" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="">All Departments</option>
+                {% for dept in ['Computer Science','Electronics','Mechanical','Civil','Electrical','Information Technology'] %}
+                <option value="{{ dept }}" {{ 'selected' if department == dept }}>{{ dept }}</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+    <a href="{{ url_for('admin.add_student') }}" class="btn btn-primary btn-sm">
+        <i class="bi bi-person-plus"></i> Add Student
+    </a>
+</div>
+
+<div class="card card-custom">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Roll No</th>
+                        <th>Name</th>
+                        <th>Department</th>
+                        <th>Sem</th>
+                        <th>Section</th>
+                        <th>Face</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in students.items %}
+                    <tr>
+                        <td class="fw-semibold">{{ s.roll_number }}</td>
+                        <td>{{ s.name }}</td>
+                        <td>{{ s.department }}</td>
+                        <td>{{ s.semester }}</td>
+                        <td>{{ s.section }}</td>
+                        <td>
+                            {% if s.face_encoding %}
+                                <span class="badge bg-success"><i class="bi bi-check-circle"></i> Enrolled</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-circle"></i> Missing</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('admin.edit_student', student_id=s.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form method="POST" action="{{ url_for('admin.delete_student', student_id=s.id) }}" class="d-inline" onsubmit="return confirm('Delete this student?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% if students.pages > 1 %}
+<nav class="mt-3">
+    <ul class="pagination pagination-sm justify-content-center">
+        {% for page in students.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if page %}
+                <li class="page-item {{ 'active' if page == students.page }}">
+                    <a class="page-link" href="?page={{ page }}&department={{ department }}">{{ page }}</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

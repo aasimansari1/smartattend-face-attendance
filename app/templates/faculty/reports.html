@@ -1,0 +1,50 @@
+{% extends "shared/base.html" %}
+{% block title %}Reports{% endblock %}
+{% block page_title %}Attendance Reports{% endblock %}
+
+{% block sidebar %}
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('faculty.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('faculty.courses') }}"><i class="bi bi-book"></i> My Courses</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('faculty.start_attendance') }}"><i class="bi bi-camera-video"></i> Take Attendance</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link active" href="{{ url_for('faculty.reports') }}"><i class="bi bi-file-earmark-bar-graph"></i> Reports</a>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    {% for c in courses %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card card-custom h-100">
+            <div class="card-body">
+                <h5 class="fw-bold">{{ c.code }}</h5>
+                <p class="mb-2">{{ c.name }}</p>
+                <small class="text-muted">{{ c.enrollments.count() }} students | {{ c.sessions.count() }} sessions</small>
+            </div>
+            <div class="card-footer bg-white border-0 pb-3">
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{{ url_for('faculty.course_report', course_id=c.id) }}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-bar-chart"></i> View
+                    </a>
+                    <a href="{{ url_for('api.export_csv', course_id=c.id) }}" class="btn btn-sm btn-outline-success">
+                        <i class="bi bi-filetype-csv"></i> CSV
+                    </a>
+                    <a href="{{ url_for('api.export_pdf', course_id=c.id) }}" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-filetype-pdf"></i> PDF
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% if not courses %}
+    <div class="col-12 text-center text-muted py-5">No courses assigned.</div>
+    {% endif %}
+</div>
+{% endblock %}

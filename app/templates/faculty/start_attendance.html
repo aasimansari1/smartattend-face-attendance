@@ -1,0 +1,50 @@
+{% extends "shared/base.html" %}
+{% block title %}Start Attendance{% endblock %}
+{% block page_title %}Start Attendance Session{% endblock %}
+
+{% block sidebar %}
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('faculty.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('faculty.courses') }}"><i class="bi bi-book"></i> My Courses</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link active" href="{{ url_for('faculty.start_attendance') }}"><i class="bi bi-camera-video"></i> Take Attendance</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('faculty.reports') }}"><i class="bi bi-file-earmark-bar-graph"></i> Reports</a>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card card-custom">
+            <div class="card-header"><i class="bi bi-play-circle"></i> New Attendance Session</div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Select Course</label>
+                        {{ form.course_id(class="form-select") }}
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Date</label>
+                            {{ form.date(class="form-control") }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Start Time</label>
+                            {{ form.start_time(class="form-control") }}
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-4 w-100">
+                        <i class="bi bi-camera-video"></i> Start Session
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

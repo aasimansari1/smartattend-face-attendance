@@ -1,0 +1,68 @@
+{% extends "shared/base.html" %}
+{% block title %}Session Report{% endblock %}
+{% block page_title %}Session Report - {{ course.code }}{% endblock %}
+
+{% block sidebar %}
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('faculty.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('faculty.courses') }}"><i class="bi bi-book"></i> My Courses</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('faculty.start_attendance') }}"><i class="bi bi-camera-video"></i> Take Attendance</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link active" href="{{ url_for('faculty.reports') }}"><i class="bi bi-file-earmark-bar-graph"></i> Reports</a>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="label">Total Students</div>
+            <div class="value">{{ total }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="label">Present</div>
+            <div class="value text-success">{{ present }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="label">Absent</div>
+            <div class="value text-danger">{{ total - present }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="card card-custom mt-4">
+    <div class="card-header">
+        {{ session.date }} | {{ session.start_time.strftime('%H:%M') }}
+        {% if session.end_time %} - {{ session.end_time.strftime('%H:%M') }}{% endif %}
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr><th>Roll No</th><th>Name</th><th>Status</th><th>Method</th><th>Time</th></tr>
+                </thead>
+                <tbody>
+                    {% for r in records %}
+                    <tr>
+                        <td class="fw-semibold">{{ r.student.roll_number }}</td>
+                        <td>{{ r.student.name }}</td>
+                        <td><span class="badge badge-{{ r.status }}">{{ r.status|capitalize }}</span></td>
+                        <td><small>{{ r.marked_by|replace('_', ' ')|title }}</small></td>
+                        <td><small class="text-muted">{{ r.marked_at.strftime('%H:%M') if r.marked_at else '-' }}</small></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
